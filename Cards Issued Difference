@@ -1,0 +1,19 @@
+Q. Your team at JPMorgan Chase is preparing to launch a new credit card, and to gain some insights, you're analyzing how many credit cards were issued each month.
+Write a query that outputs the name of each credit card and the difference in the number of issued cards between the month with the highest issuance cards and the lowest issuance. Arrange the results based on the largest disparity.
+
+A.
+Method 1:
+SELECT card_name, (max(issued_amount)-min(issued_amount)) AS difference
+FROM monthly_cards_issued
+GROUP BY card_name
+ORDER BY difference DESC;
+
+Method 2(CTE function):
+WITH CARD_DETAILS AS 
+(SELECT CARD_NAME, ISSUED_AMOUNT,
+MAX(ISSUED_AMOUNT) OVER(PARTITION BY CARD_NAME) AS MAX_AMOUNT,
+MIN(ISSUED_AMOUNT) OVER(PARTITION BY CARD_NAME) AS MIN_AMOUNT
+FROM MONTHLY_CARDS_ISSUED)
+SELECT DISTINCT(CARD_NAME), (MAX_AMOUNT-MIN_AMOUNT) AS DIFFERENCE FROM CARD_DETAILS
+ORDER BY DIFFERENCE DESC
+;
