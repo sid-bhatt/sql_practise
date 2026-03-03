@@ -1,0 +1,43 @@
+Q. CVS Health is trying to better understand its pharmacy sales, and how well different products are selling. Each drug can only be produced by one manufacturer.
+
+Write a query to find the top 3 most profitable drugs sold, and how much profit they made. Assume that there are no ties in the profits. Display the result from the highest to the lowest total profit.
+
+Definition:
+
+cogs stands for Cost of Goods Sold which is the direct cost associated with producing the drug.
+Total Profit = Total Sales - Cost of Goods Sold
+
+
+A.
+Method 1:
+WITH SALES AS 
+(
+  SELECT DRUG,
+  SUM(TOTAL_SALES - COGS) AS TOTAL_PROFIT 
+  FROM pharmacy_sales
+  GROUP BY DRUG
+)
+SELECT DRUG, TOTAL_PROFIT FROM SALES
+ORDER BY TOTAL_PROFIT DESC
+LIMIT 3
+;
+
+Method 2:
+WITH SALES AS (
+  SELECT DRUG, SUM(TOTAL_SALES - COGS) AS TOTAL_PROFIT
+  FROM pharmacy_sales
+  GROUP BY DRUG
+)
+SELECT DRUG, TOTAL_PROFIT 
+FROM (
+  SELECT DRUG, TOTAL_PROFIT, 
+  ROW_NUMBER() OVER (ORDER BY TOTAL_PROFIT DESC) AS RN
+  FROM SALES
+) RANKED
+WHERE RN <= 3;
+
+
+Method 3:
+SELECT DRUG, TOTAL_SALES - COGS AS TOTAL_PROFIT FROM pharmacy_sales
+ORDER BY TOTAL_PROFIT DESC
+LIMIT 3;
