@@ -1,0 +1,23 @@
+Q. UnitedHealth Group (UHG) has a program called Advocate4Me, which allows policy holders (or, members) to call an advocate and receive support for their health care needs – whether that's claims and benefits support, drug coverage, pre- and post-authorisation, medical records, emergency assistance, or member portal services.
+Write a query to find how many UHG policy holders made three, or more calls, assuming each call is identified by the case_id column.
+
+A.
+Method 1:
+SELECT COUNT(*) AS POLICY_HOLDER_COUNT 
+FROM (
+  SELECT POLICY_HOLDER_ID FROM callers
+  GROUP BY POLICY_HOLDER_ID
+  HAVING COUNT(*) > 2
+) t
+;
+
+Method 2: 
+WITH COUNT_CALLERS AS
+(SELECT POLICY_HOLDER_ID, CASE_ID,
+ROW_NUMBER() OVER (PARTITION BY POLICY_HOLDER_ID) AS RN
+FROM callers)
+
+SELECT COUNT(*) AS POLICY_HOLDER_COUNT FROM COUNT_CALLERS
+WHERE RN = 3
+
+;
