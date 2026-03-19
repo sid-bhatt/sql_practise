@@ -1,0 +1,11 @@
+Q. Assume you are given the table below on Uber transactions made by users. Write a query to obtain the third transaction of every user. 
+Output the user id, spend and transaction date.
+
+A. WITH COUNTED_TRANSACTIONS AS
+(SELECT USER_ID, SPEND, TRANSACTION_DATE,
+ROW_NUMBER() OVER(PARTITION BY USER_ID ORDER BY TRANSACTION_DATE) AS RN
+FROM transactions)
+
+SELECT USER_ID, SPEND, TRANSACTION_DATE FROM COUNTED_TRANSACTIONS
+WHERE RN = 3;
+
