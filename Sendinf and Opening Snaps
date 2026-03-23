@@ -1,0 +1,47 @@
+Q. Assume you're given tables with information on Snapchat users, including their ages and time spent sending and opening snaps.
+
+Write a query to obtain a breakdown of the time spent sending vs. opening snaps as a percentage of total time spent on these activities grouped by age group. Round the percentage to 2 decimal places in the output.
+
+Notes:
+Calculate the following percentages:
+time spent sending / (Time spent sending + Time spent opening)
+Time spent opening / (Time spent sending + Time spent opening)
+To avoid integer division in percentages, multiply by 100.0 and not 100.
+
+A.
+Method 1:
+SELECT age_bucket,
+ROUND(100.0 * 
+SUM(a.time_spent) FILTER (WHERE activity_type = 'send')/
+SUM(a.time_spent), 2) AS send_perc,
+ROUND(100.0 * 
+SUM(a.time_spent) FILTER (WHERE activity_type = 'open')/
+SUM(a.time_spent), 2)
+AS open_perc
+FROM activities a
+JOIN age_breakdown ab ON a.user_id = ab.user_id
+WHERE a.activity_type = 'open' OR activity_type = 'send'
+GROUP BY age_bucket
+;
+
+Method 2:
+WITH activity_summary AS
+(
+SELECT age_bucket, 
+CASE 
+  WHEN activity_type = 'open' THEN time_spent 
+  ELSE 0 
+END AS open_time,
+CASE 
+  WHEN activity_type = 'send' THEN time_spent
+  ELSE 0 
+  END AS send_time
+FROM activities a
+JOIN age_breakdown ab ON a.user_id = ab.user_id
+WHERE a.activity_type IN ('open', 'send')
+)
+SELECT age_bucket, 
+ROUND(100.0 * SUM(open_time)/SUM(open_time + send_time), 2) AS open_perc,
+ROUND(100.0 * SUM(send_time)/SUM(open_time + send_time), 2) AS send_perc
+FROM activity_summary
+GROUP BY age_bucket;
