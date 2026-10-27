@@ -1,0 +1,61 @@
+Q) You're a data analyst at an e-commerce company. The business wants to understand how customer spending changes from month to month.
+
+Your task is to identify customers whose spending increased compared with the previous month and whose current month's spending exceeded £500.
+
+| OrderID | CustomerID | OrderDate | Amount | Status |
+|---:|---:|---|---:|---|
+| 1 | 101 | 2026-01-10 | 200 | Completed |
+| 2 | 101 | 2026-01-20 | 300 | Completed |
+| 3 | 101 | 2026-02-05 | 400 | Completed |
+| 4 | 101 | 2026-02-15 | 300 | Completed |
+| 5 | 101 | 2026-03-12 | 700 | Completed |
+| 6 | 102 | 2026-01-08 | 600 | Completed |
+| 7 | 102 | 2026-02-14 | 400 | Completed |
+| 8 | 102 | 2026-03-18 | 800 | Completed |
+| 9 | 103 | 2026-01-11 | 200 | Completed |
+| 10 | 103 | 2026-02-19 | 600 | Completed |
+| 11 | 103 | 2026-03-20 | 500 | Completed |
+| 12 | 104 | 2026-01-07 | 700 | Cancelled |
+| 13 | 104 | 2026-01-15 | 200 | Completed |
+| 14 | 104 | 2026-02-10 | 400 | Completed |
+| 15 | 104 | 2026-03-15 | 600 | Completed |
+
+Sort the results by CustomerID ascending, then Month ascending.
+
+Write a SQL query to identify customer-month combinations satisfying both conditions:
+1. The customer's total spending on completed orders in that month is greater than £500.
+2. Their total spending is greater than their spending in the previous calendar month.
+
+| Column | Description |
+|---|---|
+| `CustomerID` | Customer identifier |
+| `Month` | Month in `YYYY-MM` format |
+| `MonthlySpending` | Total completed-order spending for that month |
+| `PreviousMonthSpending` | Total spending in the previous calendar month |
+
+A)
+WITH MonthlyTotals AS (
+SELECT
+    CustomerID,
+    DATE_FORMAT(OrderDate, '%Y-%m') AS Month,
+    SUM(Amount) AS MonthlySpending
+FROM Orders
+WHERE Status = 'Completed'
+GROUP BY CustomerID, Month
+ORDER BY CustomerID, Month
+),
+MonthlyComparison AS (
+    SELECT
+        CustomerID,
+        Month,
+        MonthlySpending,
+        LAG(MonthlySpending, 1) OVER (
+            PARTITION BY CustomerID
+            ORDER BY Month ASC
+        ) AS PreviousMonthSpending
+    FROM MonthlyTotals
+)
+SELECT *
+FROM MonthlyComparison
+WHERE MonthlySpending > 500 AND MonthlySpending > PreviousMonthSpending
+ORDER BY CustomerID, Month;
