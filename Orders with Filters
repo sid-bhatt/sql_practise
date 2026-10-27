@@ -1,0 +1,36 @@
+Q) Imagine you're working as a data analyst for an e-commerce company.
+
+You have the following table named Orders:
+OrderID	CustomerID	Amount	Status
+1	101	200	Completed
+2	102	150	Completed
+3	101	300	Completed
+4	103	100	Cancelled
+5	102	400	Completed
+6	101	100	Cancelled
+7	103	250	Completed
+8	104	500	Completed
+9	102	100	Completed
+10	104	200	Cancelled
+
+
+Your task
+Write a SQL query to find customers whose total spending on completed orders exceeds £400.
+
+Your output must contain two columns:
+- CustomerID
+- TotalSpent
+Requirements:
+1. Only consider orders with Status = 'Completed'.
+2. Calculate the total completed-order amount for each customer.
+3. Return only customers whose total exceeds £400.
+4. Sort the results by TotalSpent in descending order.
+
+
+A)
+SELECT CustomerID, SUM(Amount) AS TotalSpent
+FROM Orders
+WHERE Status = 'Completed'
+GROUP BY CustomerID
+HAVING TotalSpent > 400
+ORDER BY TotalSpent DESC;
