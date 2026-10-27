@@ -1,0 +1,16 @@
+Q)
+Suppose you have an Employees table:
+EmployeeID	Department	Salary
+1	Engineering	60000
+2	Engineering	80000
+3	Engineering	70000
+4	Marketing	45000
+5	Marketing	55000
+
+
+Task: Write a SQL query that returns every employee, their salary, and their department's average salary.
+
+A)
+SELECT EmployeeID, Department, Salary, 
+AVG(Salary) OVER (PARTITION BY Department) AS AverageDepartmentSalary
+FROM Employees;
