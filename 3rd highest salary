@@ -1,0 +1,20 @@
+Q) Write a SQL query to find the third-highest distinct salary across the entire company.
+
+A)
+Solution 1:
+Select DISTINCT Salary FROM Employees
+ORDER BY Salary DESC
+LIMIT 1 OFFSET 2;
+
+Solution 2:
+WITH RankedSalaries AS (
+    SELECT
+        Salary,
+        DENSE_RANK() OVER (
+            ORDER BY Salary DESC
+        ) AS SalaryRank
+    FROM Employees
+)
+SELECT Salary
+FROM RankedSalaries
+WHERE SalaryRank = 3;
