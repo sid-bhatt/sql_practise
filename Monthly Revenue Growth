@@ -1,0 +1,75 @@
+Q) ## Day 6 – Monthly Revenue Growth (MySQL 8)
+
+Difficulty: Intermediate
+
+GitHub filename: `day-06-monthly-revenue-growth.sql`
+
+### Problem statement
+
+You are given an `Orders` table containing customer orders, dates, amounts, and order statuses.
+
+Write a SQL query to identify customers whose monthly revenue increased by at least 20% compared with their previous available month.
+
+### Requirements
+
+1. Ignore orders where `Status` is not `'Completed'`.
+2. Calculate total revenue for each customer per month.
+3. Use `YYYY-MM` format for the month.
+4. Compare each month's revenue with the customer's previous available month's revenue.
+5. Calculate the percentage growth:
+
+\\[ Growth\\% = \frac{CurrentRevenue - PreviousRevenue}{PreviousRevenue}\times100 \\]
+
+6\. Return only rows where:
+
+- Previous month's revenue is not NULL.
+- Previous month's revenue is greater than zero.
+- Revenue growth is at least 20%.
+
+### Expected output
+
+| CustomerID | Month   | MonthlyRevenue | PreviousMonthRevenue | GrowthPercentage |
+| ---------- | ------- | -------------- | -------------------- | ---------------- |
+| 101        | 2026-02 | 300            | 200                  | 50.00            |
+| 101        | 2026-03 | 500            | 300                  | 66.67            |
+| 102        | 2026-02 | 600            | 400                  | 50.00            |
+| 103        | 2026-03 | 700            | 500                  | 40.00            |
+| 104        | 2026-03 | 600            | 400                  | 50.00            |
+
+### Concepts practised
+
+- `DATE_FORMAT()`
+- `SUM()` and `GROUP BY`
+- Multiple CTEs (`WITH`)
+- `LAG()` window function
+- `PARTITION BY` and `ORDER BY`
+- Percentage calculations
+- SQL execution order and alias filtering
+
+Database: MySQL 8\
+Status: Day 6 – Monthly Revenue Growth
+
+
+A) 
+with RevenueByMonth as (
+	Select CustomerID,
+    DATE_FORMAT(OrderDate, '%Y-%m') as month,
+    SUM(Amount) as MonthlyRevenue
+    From Orders
+  	Where Status = 'Completed'
+    Group by CustomerID, month 	
+),
+RevenueComparison as (
+	Select CustomerID,
+  	month,
+  	MonthlyRevenue,
+  	LAG(MonthlyRevenue, 1) OVER(Partition by CustomerID ORDER by month) as PreviousMonthRev
+ 	From RevenueByMonth
+)
+
+Select CustomerID, month, PreviousMonthRev, MonthlyRevenue,
+((MonthlyRevenue - PreviousMonthRev)*100/PreviousMonthRev) as GrowthPercentage
+From RevenueComparison
+WHERE PreviousMonthRev IS NOT NULL
+  AND PreviousMonthRev > 0
+  AND ((MonthlyRevenue - PreviousMonthRev)*100/PreviousMonthRev) >= 20;
